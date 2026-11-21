@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f6f8" />
+    <meta
+      name="description"
+      content="Decode binary logs in your browser. Your files never leave your device."
+    />
+    <title>BinaryLens — binary data, made clear</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="BinaryLens home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>binary<span class="brand-light">lens</span></span>
+      </a>
+      <div class="privacy-note"><span class="privacy-dot"></span> Private by design <span class="privacy-divider">·</span> Files stay on your device</div>
+      <a class="topbar-link" href="#help">How it works <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main class="app-shell">
+      <section class="intro">
+        <div class="eyebrow"><span class="eyebrow-line"></span> BINARY DATA, MADE CLEAR</div>
+        <h1>See what your bytes <span>are saying.</span></h1>
+        <p>Drop in a capture, describe your message once, and turn raw bytes into something you can actually read.</p>
+        <div class="launch-actions" aria-label="Early access and launch options">
+          <div class="launch-copy">
+            <strong>Early MVP</strong>
+            <span>Free to try</span>
+          </div>
+          <div class="launch-buttons" aria-label="Support and subscription">
+            <button type="button" disabled title="Support links will be available after launch setup">Support</button>
+            <button type="button" disabled title="Subscriptions will be available after launch setup">Subscribe</button>
+          </div>
+          <span class="launch-status">Support and subscription links coming soon</span>
+        </div>
+      </section>
+
+      <section class="workspace" aria-label="Binary decoder">
+        <aside class="sidebar">
+          <div class="section-heading">
+            <span class="step-number">01</span>
+            <div><h2>Your message</h2><p>Define the structure of one packet</p></div>
+          </div>
+
+          <div class="preset-row">
+            <label for="preset-select">START WITH A PRESET</label>
+            <select id="preset-select" aria-label="Choose a layout preset"></select>
+          </div>
+
+          <div class="editor-wrap">
+            <div class="editor-toolbar">
+              <span class="editor-file"><span class="file-icon">⌘</span> sensor.layout</span>
+              <button id="import-struct" class="text-button" type="button" title="Import a C or C++ struct">Import C struct</button>
+            </div>
+            <textarea id="layout-editor" spellcheck="false" aria-label="Message layout definition"></textarea>
+            <div class="editor-footer">
+              <span id="layout-status" class="status-text">Layout ready</span>
+              <button id="reset-layout" class="icon-button" type="button" title="Reset layout">↺</button>
+            </div>
+          </div>
+
+          <div class="layout-help" id="help">
+            <span class="help-icon">i</span>
+            <span>Use <code>uint8</code>, <code>int16</code>, <code>float32</code>, or <code>bytes[n]</code>. Add <code>little-endian</code> or <code>big-endian</code> as needed.</span>
+          </div>
+
+          <div class="section-heading file-heading">
+            <span class="step-number">02</span>
+            <div><h2>Your capture</h2><p>Nothing is uploaded. Ever.</p></div>
+          </div>
+          <label id="drop-zone" class="drop-zone" for="file-input" tabindex="0">
+            <input id="file-input" type="file" accept=".bin,.dat,.raw,application/octet-stream" />
+            <span class="upload-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>
+            </span>
+            <span class="drop-title">Drop a file here</span>
+            <span class="drop-subtitle">or <span>browse your device</span></span>
+            <span class="file-limit">Binary files up to 100 MB</span>
+          </label>
+          <div id="file-summary" class="file-summary" hidden></div>
+          <button id="load-example" class="example-button" type="button">
+            <span aria-hidden="true">✳</span> Try the built-in example <span aria-hidden="true">→</span>
+          </button>
+        </aside>
+
+        <section class="results" aria-label="Decoded output">
+          <div class="section-heading result-heading">
+            <span class="step-number">03</span>
+            <div><h2>Decoded output</h2><p id="result-subtitle">Your data, translated in seconds</p></div>
+            <span class="live-badge"><span></span> LOCAL</span>
+          </div>
+
+          <div id="empty-state" class="empty-state">
+            <div class="empty-visual" aria-hidden="true">
+              <div class="empty-grid"></div>
+              <div class="byte-stream">A5 01 00 2C 3F 80 00 00</div>
+              <div class="decode-arrow">↓</div>
+              <div class="decoded-chip"><span>temperature</span><strong>43.5 °C</strong></div>
+            </div>
+            <h3>Raw bytes have a story.</h3>
+            <p>Choose a layout and load a capture to see it unfold.</p>
+          </div>
+
+          <div id="loading-state" class="loading-state" hidden>
+            <span class="spinner"></span>
+            <div><strong>Decoding on your device</strong><span id="progress-label">Preparing your capture…</span></div>
+          </div>
+
+          <div id="output-state" class="output-state" hidden>
+            <div class="stats-row">
+              <div class="stat-card"><span>PACKETS</span><strong id="packet-count">0</strong></div>
+              <div class="stat-card"><span>BYTES READ</span><strong id="byte-count">0 B</strong></div>
+              <div class="stat-card stat-error"><span>ISSUES</span><strong id="issue-count">0</strong></div>
+            </div>
+
+            <section class="chart-card" aria-label="Numeric field chart">
+              <div class="card-heading">
+                <div><h3>Signal over time</h3><p id="chart-caption">Numeric fields from your capture</p></div>
+                <label class="chart-select-label" for="chart-field">FIELD</label>
+                <select id="chart-field" aria-label="Choose a field to chart"></select>
+              </div>
+              <div id="chart-container" class="chart-container">
+                <div class="chart-empty">Load a capture to plot numeric fields.</div>
+              </div>
+            </section>
+
+            <section class="table-card" aria-label="Decoded packets">
+              <div class="card-heading table-heading">
+                <div><h3>Decoded packets</h3><p id="table-caption">Parsed fields appear here</p></div>
+                <div class="export-actions">
+                  <button id="export-csv" type="button" disabled>↓ CSV</button>
+                  <button id="export-json" type="button" disabled>↓ JSON</button>
+                </div>
+              </div>
+              <div id="error-list" class="error-list" hidden></div>
+              <div id="table-scroll" class="table-scroll" tabindex="0">
+                <table id="results-table">
+                  <thead id="table-head"></thead>
+                  <tbody id="table-body"></tbody>
+                </table>
+                <div id="table-empty" class="table-empty">Your decoded fields will show up here.</div>
+              </div>
+            </section>
+          </div>
+
+          <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+        </section>
+      </section>
+
+      <footer class="app-footer">
+        <span>Made for the people who make things that talk.</span>
+        <span><span class="footer-lock">◇</span> Your data stays yours.</span>
+      </footer>
+    </main>
+
+    <dialog id="struct-dialog" class="struct-dialog">
+      <form method="dialog">
+        <div class="dialog-heading"><div><span class="eyebrow">LAYOUT IMPORT</span><h2>Paste a C or C++ struct</h2></div><button class="icon-button" aria-label="Close">×</button></div>
+        <p>Supports simple integer and float fields, fixed arrays, and bitfields. Imported fields default to little-endian.</p>
+        <textarea id="struct-input" spellcheck="false" placeholder="typedef struct __attribute__((packed)) {&#10;  uint8_t header;&#10;  uint16_t length;&#10;  float temperature;&#10;} SensorPacket;"></textarea>
+        <div id="struct-error" class="dialog-error" hidden></div>
+        <div class="dialog-actions"><button class="secondary-button" value="cancel">Cancel</button><button id="apply-struct" class="primary-button" type="button">Import layout</button></div>
+      </form>
+    </dialog>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

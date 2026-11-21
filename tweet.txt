@@ -1,0 +1,11 @@
+Two bytes: 2C 01.
+
+Read little-endian, that's 300. Read big-endian, it's 11265. Both are perfectly valid numbers and nothing in the bytes says which one the sender meant.
+
+And that's the easy version, where you already know those two bytes belong together. In a raw log you might not know where one packet ends and the next one starts, or which bytes make up a field. 2C could be the low byte of a length, or the last byte of whatever came before it. If you're off by one byte at the boundary, every field after that still decodes into a number. It's just the wrong number.
+
+The bytes are the same in every case. What changes the answer is the layout and byte order you bring to them, and most of the time that lives in someone's head or a C struct somewhere, not in the hex view.
+
+That's the gap I'm building BinaryLens for. It decodes a binary log into packet fields, charts and checksum diagnostics, right in the browser. Still early, and the MVP will be free to try
+
+Embedded folks, what's the worst byte order mixup you've ever run into?
